@@ -1,0 +1,3 @@
+#!/Users/allen/Documents/Python/Crest/env/bin/python3.7
+from numba.pycc import main
+main()
