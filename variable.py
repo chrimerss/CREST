@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from flow import Flow
 
 
 class Forcing(object):
@@ -28,8 +29,7 @@ class Fluxes(object):
 
     def init_basic_fluxes(self):
         self.fluxes= {
-            'RS' : 0.0,
-            'RI' : 0.0,
+            'runoff' : 0.0,
         }
 
 class States(object):
@@ -89,7 +89,7 @@ specs= (
     )
 
 class Cell(States, Fluxes, Parameters, Forcing):
-    def __init__(self, i, j, area=1):
+    def __init__(self, i, j,lon,lat,area=1):
         super(Cell, self).__init__()
         Parameters.__init__(self)
         States.__init__(self)
@@ -97,6 +97,8 @@ class Cell(States, Fluxes, Parameters, Forcing):
         Forcing.__init__(self)
         self.row= i
         self.col= j
+        self.lon= lon
+        self.lat= lat
         self._area= area
 
     def __str__(self):
@@ -112,6 +114,23 @@ class Cell(States, Fluxes, Parameters, Forcing):
     @property
     def area(self):
         return self._area
+
+    @nextCellI.setter
+    def nextCellI(self, I):
+        self.nextCellI= I
+
+    @property
+    def nextCellI(self):
+        return self._nextCellI
+
+    @nextCellS.setter
+    def nextCellS(self, S):
+        self.nextCellS= S
+
+    @property
+    def nextCellS(self):
+        return self._nextCellS
+
 
 
 

@@ -108,13 +108,14 @@ def _runoff(
 
     return [W, ExcS, ExcI]
 
-def _core(cell, timestep=1, routingType='CLR'):
+def _core(cell, nextCell, timestep=1, routingType='CLR'):
     '''
     this function controls all processes
 
     Args:
     -----------------
     :cell - Cell object that contains Parameters, Forcing, States, Fluxes
+    :nextCell -Cell object
     :timestep - int;
     :routingType
 
@@ -173,13 +174,19 @@ def _core(cell, timestep=1, routingType='CLR'):
     'SS0': SS0
     }
     fluxes= {
-    'RS': RS,
-    'RI': RI
+    'runoff': runoff,
     }
 
     cell.update(states, 'states')
     cell.update(fluxes, 'fluxes')
 #     print(Rain-EAct-RI-RS-SS0-SI0-W0) water balanced
 #     assert Rain-EAct-RI-RS+SS0+SI0+W0>1e-5, Rain-EAct-RI-RS+SS0+SI0+W0
+
+    #downstream routing
+    if nextCell is not None:
+        SS0= nextCell.states['SS0']
+        SI0= nextCell.states['SI0']
+
+        SS0+= RS*
 
     return None
