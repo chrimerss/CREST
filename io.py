@@ -10,8 +10,11 @@ class FileIO(object):
         self.precipFolder= precipFolder
         self.evapFolder= evapFolder
 
-    def create_flow_dir(self, dst):
-        os.system('gdaldem aspect -trigonometric %s %s'%(self.demFile, dst))
+    def returnTimePeriod(self):
+        pass
 
-    def create_slope(self, dst):
-        os.system('gdaldem slope %s %s'%(self.demFile, dst))
+    def readPattern(self):
+        pass
+
+    def yieldForcing(self):
+        pass

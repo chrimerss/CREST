@@ -182,11 +182,6 @@ def _core(cell, nextCell, timestep=1, routingType='CLR'):
 #     print(Rain-EAct-RI-RS-SS0-SI0-W0) water balanced
 #     assert Rain-EAct-RI-RS+SS0+SI0+W0>1e-5, Rain-EAct-RI-RS+SS0+SI0+W0
 
-    #downstream routing
-    if nextCell is not None:
-        SS0= nextCell.states['SS0']
-        SI0= nextCell.states['SI0']
 
-        SS0+= RS*
 
     return None

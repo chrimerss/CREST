@@ -30,6 +30,8 @@ class Fluxes(object):
     def init_basic_fluxes(self):
         self.fluxes= {
             'runoff' : 0.0,
+            'inflowI': 0.0,
+            'inflowS': 0.0,
         }
 
 class States(object):
@@ -79,59 +81,79 @@ class Parameters(object):
             'KS'      : 0.9,
             'KI'      : 0.8,
         }
-specs= (
-        'params', Dict,
-        'forcing', Dict,
-        'row', int,
-        'col', int,
-        'states', Dict,
-        'fluxes',Dict
-    )
 
-class Cell(States, Fluxes, Parameters, Forcing):
+
+class FlowChar(object):
+    def __init__(self):
+        self.init_basic_chars()
+
+    def init_basic_chars(self):
+        self.flow= {
+        'area': -9999.,
+        'dem': -9999.,
+        'dir': -9999.,
+        'slope': -9999.,
+        'dist': -9999.,
+        'stream': -9999.,
+        'speed': -9999.,
+        'time': -9999.
+        }
+
+    def __str__(self):
+        return str(['%s: %.4f'%(key, value) for key, value in self.flow.items()])
+
+class Cell(States,
+           Fluxes,
+           Parameters,
+           Forcing,
+           FlowChar):
+
     def __init__(self, i, j,lon,lat,area=1):
         super(Cell, self).__init__()
         Parameters.__init__(self)
         States.__init__(self)
         Fluxes.__init__(self)
         Forcing.__init__(self)
+        FlowChar.__init__(self)
         self.row= i
         self.col= j
         self.lon= lon
         self.lat= lat
-        self._area= area
+        self.nextCell= np.nan
 
     def __str__(self):
-        return 'row: %d; col: %d\nForcing: %s\nParameters: %s\nFluxes: %s\nStates: %s'%(
-            self.row, self.col, self.forcing, self.params, self.fluxes, self.states)
+        return 'row: %d; col: %d\nForcing: %s\nParameters: \
+                %s\nFluxes: %s\nStates: %s \nFlow characteristics: %s'%(
+            self.row, self.col, self.forcing, self.params,
+             self.fluxes, self.states, self.flow)
 
     def update(self, kwargs, type='states'):
         if type=='states':
             self.states.update(kwargs)
         elif type=='fluxes':
             self.fluxes.update(kwargs)
-
-    @property
-    def area(self):
-        return self._area
-
-    @nextCellI.setter
-    def nextCellI(self, I):
-        self.nextCellI= I
-
-    @property
-    def nextCellI(self):
-        return self._nextCellI
-
-    @nextCellS.setter
-    def nextCellS(self, S):
-        self.nextCellS= S
-
-    @property
-    def nextCellS(self):
-        return self._nextCellS
+        elif type=='flow':
+            self.flow.update(kwargs)
+        elif type=='forcing':
+            self.forcing.update(kwargs)
 
 
 
+    # @property
+    # def nextCell(self):
+    #     return self.nextCell
+
+    # @nextCell.setter
+    # def nextCell(self, indices):
+    #     '''Input ID number'''
+    #     self.nextCell= indices
+    # @nextCellS.setter
+    # def nextCellS(self, S):
+    #     '''Input ID number'''
+    #     self.nextCellS= S
+
+    # @property
+    # def nextCellS(self):
+    #     return np.nan
 
 
