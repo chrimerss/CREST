@@ -119,6 +119,8 @@ class Flow(object):
 
         return nextCellIndices
 
+
+
     def _dir_matching(self, i, j, fdir):
         if fdir==1:
             return (i, j-1)
