@@ -82,24 +82,32 @@ class Flow(object):
         end= time.time()
         logger.warning('preprocessing costs: %.2f seconds!'%(end-start))
 
-    def flowSpeed(self, cell):
-        i,j= cell.row, cell.col
+    def flowSpeed(self, row, col, *args):
+        '''compute flow speed for each cell'''
+        coeM= args[0]
+        expM= args[1]
+        coeR= args[2]
+
+        flowdir= self.grid.dir[row, col]
+        slope= self.grid.slope[row,col]
+        nextCell= _dir_matching(row, col, flowdir)
+
         speedVegLocal= 0.5
-        if not np.isnan(np.array(cell.nextCell)).any():
-            if self._isinCatchment(cell.nextCell):
+        if not np.isnan(nextCell):
+            if _isinCatchment(nextCell):
                 speedVegNext= 0.5
             else:
                 speedVegNext= speedVegLocal
         else:
             #TODO is the next speed rational?
             speedVegNext= speedVegLocal
-        if cell.flow['slope']>=0:
-            speed= cell.params['coeM']*((speedVegLocal+
-            speedVegNext)/2.0)*cell.flow['slope']**cell.params['expM']
+        if slope[row, col]>=0:
+            speed= coeM*((speedVegLocal+
+            speedVegNext)/2.0)*slope[row, col]**expM
         else:
             speed= -9999
-        if self.stream[i,j]:
-            speed= speed*cell.params['coeR']
+        if self.grid.stream[row,col]>0:
+            speed= speed*coeR
 
         return speed
 
@@ -141,12 +149,11 @@ class Flow(object):
         elif fdir==0:
             return (np.nan, np.nan)
 
-
-    def _isinCatchment(self, indices):
+    @staticmethod
+    def _isinCatchment(row, col):
         '''Justify the grid is in the extent of catchment'''
-        i,j= indices
-        xmin, xmax, ymin, ymax= self.grid.extent
-        if self.grid.basin[i,j]>=0:
+
+        if self.grid.basin[row,col]>=0:
             return True
         else:
             return False

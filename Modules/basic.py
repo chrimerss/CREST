@@ -108,7 +108,11 @@ def _runoff(
 
     return [W, ExcS, ExcI]
 
-def _core(cell, nextCell, timestep=1, routingType='CLR'):
+@jit(nopython=True)
+def _core(Rain, PET, RI, RS, SS0, SI0, W0,
+         RainFact, Ksat, WM, B, IM, KE, coeM,
+         expM, coeR, coeS, KS, KI,
+        timestep=1):
     '''
     this function controls all processes
 
@@ -124,32 +128,12 @@ def _core(cell, nextCell, timestep=1, routingType='CLR'):
     :cell - Cell object; updated by states and fluxes
     '''
 
-    #---------Forcing data---------#
-    Rain= cell.forcing['P']*timestep
-    PET= cell.forcing['PET']*timestep
-
-    #---------States---------------#
-    W0= cell.states['W0']
-    SI0= cell.states['SI0']
-    SS0= cell.states['SS0']
-
-    #---------Fluxes---------------#
-    RS= cell.fluxes['RS']
-    RI= cell.fluxes['RI']
-
-    #---------Parameter------------#
-    RainFact= cell.params['RainFact']
-    KE= cell.params['KE']
-    B= cell.params['B']
-    KS= cell.params['KS']
-    KI= cell.params['KI']
-    WM= cell.params['WM']
-    IM= cell.params['IM']
-    Ksat= cell.params['Ksat']
-
     #----------Modelling------------#
     Rain= _precipInt(Rain, RainFact)
     EPot= _potEvap(PET, KE)
+
+    SS0+= RS
+    SI0+= RI
 
     W, ExcS, ExcI= _runoff(W0, Rain, EPot, WM, IM, B,
      Ksat*timestep)
@@ -168,20 +152,41 @@ def _core(cell, nextCell, timestep=1, routingType='CLR'):
 
     runoff= ((RS+RI)/timestep)*cell.area
 
-    states= {
-    'W0': W0,
-    'SI0': SI0,
-    'SS0': SS0
-    }
-    fluxes= {
-    'runoff': runoff,
-    }
 
-    cell.update(states, 'states')
-    cell.update(fluxes, 'fluxes')
 #     print(Rain-EAct-RI-RS-SS0-SI0-W0) water balanced
 #     assert Rain-EAct-RI-RS+SS0+SI0+W0>1e-5, Rain-EAct-RI-RS+SS0+SI0+W0
 
+    return RI, RS, SS0, SI0, W0
 
+def make_grids(nrows, ncols):
+    grids= np.zeros(
+            (nrows, ncols), dtype= {
+            'names': ('RI', 'RS', 'SS0',
+                     'SI0', 'W0', 'RainFact', 'Ksat',
+                     'WM', 'B', 'IM', 'coeM', 'expM', 'coeR',
+                     'coeS', 'KS', 'KI', 'area'),
+            'formats': ('f4', 'f4', 'f4', 'f4', 'f4',
+                         'f4', 'f4', 'f4', 'f4', 'f4',
+                         'f4','f4','f4','f4','f4','f4','f4')
+            }
+            )
 
-    return None
+    return grids
+
+def init_params(grids):
+
+    grids['RainFact']= 1.0
+    grids['Ksat']= 500.
+    grids['KM']= 120
+    grids['B']= 0.25
+    grids['IM']= 0.05
+    grids['KE']= 0.95
+    grids['coeM']= 90
+    grids['expM']= 0.5
+    grids['coeR']= 2
+    grids['coeS']= 0.3
+    grids['KS']= 0.6
+    grids['KI']= 0.25
+    grids['area']=0.0
+
+    return grids

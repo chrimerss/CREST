@@ -102,6 +102,7 @@ class FlowChar(object):
     def __str__(self):
         return str(['%s: %.4f'%(key, value) for key, value in self.flow.items()])
 
+
 class Cell(States,
            Fluxes,
            Parameters,

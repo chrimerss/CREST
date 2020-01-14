@@ -18,3 +18,6 @@ class FileIO(object):
 
     def yieldForcing(self):
         pass
+
+    def writeArray(self):
+        pass
